@@ -1,0 +1,14 @@
+{
+  "requires": [],
+  "provides": {
+    "shorthands": {
+      "lOfS": ["tyapp", ["local", "List"], ["String"]]
+    },
+    "values": {
+      "glob": ["arrow", ["String"], "lOfS"]
+    }
+  },
+  "datatypes": {
+    "List": ["data", "List", ["a"], [], {}]
+  }
+}

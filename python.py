@@ -1,4 +1,5 @@
 import re
+import time
 import glob
 
 # set minimum and maximum grams to be accounted for
@@ -49,20 +50,26 @@ def createDatabase():
   return database
 
 # database containing all the grams for each year
+startTime = time.time()
 GRAM_DATABASE = createDatabase()
+print time.time() - startTime
 
 # get the count of instances of each word from the provided list
 def getGrams( words ):
   grams = dict()
 
   for word in words:
-    grams[word] =[GRAM_DATABASE[year][word] if word in GRAM_DATABASE[year] else 0 for year in GRAM_DATABASE]
+    grams[word] = [(year, GRAM_DATABASE[year][word]) if word in GRAM_DATABASE[year] else (year, 0) for year in sorted( GRAM_DATABASE )]
   
   return grams
 
 # get a list containing all the counts of both words per year
 testGrams = getGrams( ["hello", "world"] )
+comparisonGram = getGrams( ["the", "a", "of"] )
 
 # make sure that all 23 years are accounted for
 assert( len( testGrams["hello"] ) == 23 )
 assert( len( testGrams["world"] ) == len( testGrams["hello"] ) )
+
+# print testGrams
+# print comparisonGram
