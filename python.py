@@ -20,7 +20,7 @@ def isPunctuation( str ):
 # update tree with all of the possible grams from the given text
 def addToTree( words, tree ):
   for currentGram in GRAMS:
-    for wordIndex in range( len( words ) - currentGram ):
+    for wordIndex in range( len( words ) - currentGram + 1 ):
       key = ""
 
       for keyIndex in range( currentGram - 1 ):
