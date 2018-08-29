@@ -16,16 +16,22 @@ fun get-words( file ):
 end
 
 fun is-punctuation( str ):
-  if ( str == "." ) or ( str == "," ) or ( str == "@" ):
+  check-1 = str == "."
+  check-2 = str == ","
+  check-3 = str == "@"
+
+  if check-1 or check-2 or check-3:
     true
   else:
     false
   end
 end
 
-fun add-to-tree( words, tree ):
+fun add-to-tree( pre-words, tree ):
   L.for-each( GRAMS, lam( current-gram ):
     offset-gram = current-gram - 1
+    words = L.filter( pre-words, lam( str ): is-punctuation( str ) == false end )
+
     L.for-each( L.range( 0, L.length( words ) - offset-gram ), lam( word-index ) block:
       pre-key = L.reduce( L.range( 0, current-gram - 1 ), lam( acc-key, key-index ):
         S.concat( acc-key, S.concat( L.at( words, key-index + word-index ), " " ) )
@@ -63,33 +69,33 @@ fun create-database() block:
   database
 end
 
-start-time = GL.time-now()
+GL.console-log( "1 run" )
+start-time-1 = GL.time-now()
 GRAM_DATABASE = create-database()
-GL.console-log( GL.time-now( start-time ) )
+GL.console-log( GL.time-now( start-time-1 ) )
+
+GL.console-log( "5 runs" )
+start-time-5 = GL.time-now()
+L.for-each( L.range( 0, 5 ), lam( x ):
+  create-database()
+end )
+GL.console-log( GL.time-now( start-time-5 ) )
 
 fun get-grams( words ) block:
-  grams = SD.make-string-dict()
-
-  L.for-each( words, lam( word ):
-    SD.insert( grams, word, L.map( SD.keys( GRAM_DATABASE ), lam( year ):
-      gram-year-tree = SD.get( GRAM_DATABASE, year )
-
-      if SD.has-key( gram-year-tree, word ):
-        {Y: year, C: SD.get( gram-year-tree, word )}
+  L.reduce( words, lam( grams, word ):
+    SD.insert( grams, word, L.reduce( SD.keys( GRAM_DATABASE ), lam( word-gram, year ):
+      if SD.has-key( SD.get( GRAM_DATABASE, year ), word ):
+        SD.insert( word-gram, year, SD.get( SD.get( GRAM_DATABASE, year ), word ) )
       else:
-        {Y: year, C: 0}
+        SD.insert( word-gram, year, 0 )
       end
-    end ) )
-  end )
-
-  grams
+    end, SD.make-string-dict() ) )
+  end, SD.make-string-dict() )
 end
 
-test-grams = get-grams( [L.list: "hello", "world"] )
-comparison-gram = get-grams( [L.list: "the", "a", "of"] )
+# assertion checks
+assertion-gram = get-grams( [L.list: "the", "a", "of", "of the"] )
 
-GL.assert( L.length( SD.get( test-grams, "hello" ) ), 23, "Incorrect number of years" )
-GL.assert( L.length( SD.get( test-grams, "hello" ) ), L.length( SD.get( test-grams, "world" ) ), "Non-matching between word-keys" )
-
-# GL.console-log( test-grams )
-# GL.console-log( comparison-gram )
+GL.assert( SD.size( SD.get( assertion-gram, "the" ) ), 23, "Incorrect number of years" )
+GL.assert( SD.get( SD.get( assertion-gram, "the" ), "1993" ), 3146, "Incorrect count of _the_" )
+GL.assert( SD.get( SD.get( assertion-gram, "of the" ), "2002" ), 442, "Incorrect count of _of the_" )

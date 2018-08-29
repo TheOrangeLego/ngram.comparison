@@ -19,7 +19,9 @@ def isPunctuation( str ):
   return str == "." or str == "," or str == "@"
 
 # update tree with all of the possible grams from the given text
-def addToTree( words, tree ):
+def addToTree( preWords, tree ):
+  words = filter( lambda word: not isPunctuation( word ), preWords )
+  
   for currentGram in GRAMS:
     for wordIndex in range( len( words ) - currentGram + 1 ):
       key = ""
@@ -44,14 +46,22 @@ def createDatabase():
       database[year] = dict()
     
     currentTree = database[year]
-    fileWords = [word for word in getWords( file )]
+    fileWords = getWords( file )
     database[year] = addToTree( fileWords, currentTree )
   
   return database
 
 # database containing all the grams for each year
+# measure the time it takes to generate one and five databases
+print "Single database"
 startTime = time.time()
 GRAM_DATABASE = createDatabase()
+print time.time() - startTime
+
+print "Five databases"
+startTime = time.time()
+for x in range( 5 ):
+  createDatabase()
 print time.time() - startTime
 
 # get the count of instances of each word from the provided list
@@ -59,17 +69,21 @@ def getGrams( words ):
   grams = dict()
 
   for word in words:
-    grams[word] = [(year, GRAM_DATABASE[year][word]) if word in GRAM_DATABASE[year] else (year, 0) for year in sorted( GRAM_DATABASE )]
+    wordGram = dict()
+
+    for year in GRAM_DATABASE:
+      if word not in GRAM_DATABASE[year]:
+        wordGram[year] = 0
+      else:
+        wordGram[year] = GRAM_DATABASE[year][word]
+
+    grams[word] = wordGram
   
   return grams
 
-# get a list containing all the counts of both words per year
-testGrams = getGrams( ["hello", "world"] )
-comparisonGram = getGrams( ["the", "a", "of"] )
+# assertion checks
+assertionGram = getGrams( ["the", "a", "of", "of the"] )
 
-# make sure that all 23 years are accounted for
-assert( len( testGrams["hello"] ) == 23 )
-assert( len( testGrams["world"] ) == len( testGrams["hello"] ) )
-
-# print testGrams
-# print comparisonGram
+assert( len( assertionGram["the"] ) == 23 ), "Incorrect number of years"
+assert( assertionGram["the"]["1993"] == 3146 ), "Incorrect count of \"the\""
+assert( assertionGram["of the"]["2002"] == 442 ), "Incorrect count of \"of the\""

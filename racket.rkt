@@ -11,7 +11,7 @@
 ( define TEXT_FILE_LIST ( for/list ([dir ( glob "data/*.txt" )]) ( path->string dir ) ) )
 
 ( define ( get-words current-file )
-  ( regexp-split #px"\\b" ( string-downcase ( file->string current-file ) ) ) )
+  ( regexp-split #px"\\W+" ( string-downcase ( file->string current-file ) ) ) )
 
 ( define ( is-punctuation str )
   ( cond
@@ -21,13 +21,16 @@
     [else #f] ) )
 
 ( define ( add-to-tree words tree )
+  ( define words-vector ( vector-filter-not is-punctuation ( list->vector words ) ) )
+
   ( for-each ( lambda ( current-gram )
-    ( for-each ( lambda ( word-index )
-      ( define pre-key ( foldl ( lambda ( key-index acc-key ) ( string-append acc-key ( list-ref words ( + word-index key-index ) ) " " ) ) "" ( range ( - current-gram 1 ) ) ) )
-      ( define key ( string-append pre-key ( list-ref words ( + word-index ( - current-gram 1 ) ) ) ) )
-      ( dict-update! tree key ( lambda ( count ) ( + count 1 ) ) 0 ) )
-      ( range ( - ( length words ) ( - current-gram  1 ) ) ) ) )
-    GRAMS ) )
+    ( for ([word-index ( in-range ( - ( length words ) ( - current-gram  1 ) ) )])
+      ( define pre-key ( foldl ( lambda ( key-index acc-key ) ( string-append acc-key ( vector-ref words-vector ( + word-index key-index ) ) " " ) ) "" ( range ( - current-gram 1 ) ) ) )
+      ( define key ( string-append pre-key ( vector-ref words-vector ( + word-index ( - current-gram 1 ) ) ) ) )
+      ( dict-update! tree key ( lambda ( count ) ( + count 1 ) ) 0 ) ) )
+  GRAMS )
+    
+  tree )
 
 ( define ( create-database )
   ( define database ( make-hash ) )
@@ -40,25 +43,43 @@
 
     ( define current-tree ( dict-ref database year ) )
     ( define file-words ( get-words file ) )
-    ( add-to-tree file-words current-tree ) )
-    ;( dict-set! database year current-tree ) )
+    ( dict-set! database year ( add-to-tree file-words current-tree ) ) )
     TEXT_FILE_LIST )
   
   database )
 
+( display "1 run\n" )
+( define start-time-1 ( current-inexact-milliseconds ) )
 ( define GRAM_DATABASE ( create-database ) )
+( display ( - ( current-inexact-milliseconds ) start-time-1 ) )
+
+( display "\n5 runs\n" )
+( define start-time ( current-inexact-milliseconds ) )
+( for-each ( lambda ( x ) ( create-database ) ) ( range 5 ) )
+( display ( - ( current-inexact-milliseconds ) start-time ) )
+( display "\n" )
 
 ( define ( get-grams words )
   ( define grams ( make-hash ) )
-
+  
   ( for-each ( lambda ( word )
-    ( dict-set! grams word ( for/list ([year ( dict-keys GRAM_DATABASE )])
-      ( define gram-year-tree ( dict-ref GRAM_DATABASE year ) )
+    ( define word-gram ( make-hash ) )
+
+    ( for-each ( lambda ( year )
       ( cond
-        [( hash-has-key? gram-year-tree word ) ( dict-ref gram-year-tree word )]
-        [else 0] ) ) ) )
+        [( hash-has-key? ( dict-ref GRAM_DATABASE year ) word ) ( dict-set! word-gram year ( dict-ref ( dict-ref GRAM_DATABASE year ) word ) )]
+        [else ( dict-set! word-gram year 0 )] ) )
+      ( dict-keys GRAM_DATABASE ) )
+
+    ( dict-set! grams word word-gram ) )
     words )
   
   grams )
 
-( display ( get-grams ( list "hello" ) ) )
+; assertion checks
+( define assertion-gram ( get-grams ( list "the" "a" "of the" ) ) )
+
+( cond
+  [( not ( equal? ( dict-count ( dict-ref assertion-gram "the" ) ) 23 ) ) ( display "Incorrect number of years\n" )]
+  [( not ( equal? ( dict-ref ( dict-ref assertion-gram "the" ) "1993" ) 3146 ) ) ( display "Incorrect count of _the_\n" )]
+  [( not ( equal? ( dict-ref ( dict-ref assertion-gram "of the" ) "2002" ) 442 ) ) ( display "Incorrect count of _of the_\n" )] )
