@@ -27,7 +27,12 @@
     ( for ([word-index ( in-range ( - ( length words ) ( - current-gram  1 ) ) )])
       ( define pre-key ( foldl ( lambda ( key-index acc-key ) ( string-append acc-key ( vector-ref words-vector ( + word-index key-index ) ) " " ) ) "" ( range ( - current-gram 1 ) ) ) )
       ( define key ( string-append pre-key ( vector-ref words-vector ( + word-index ( - current-gram 1 ) ) ) ) )
-      ( dict-update! tree key ( lambda ( count ) ( + count 1 ) ) 0 ) ) )
+      
+      ; using this dict-update! is causing nearly 4 times the runtime required to run and generate a tree
+      ;( dict-update! tree key update-count 0 ) ) )
+      ( cond
+        [( hash-has-key? tree key ) ( dict-set! tree key ( + ( dict-ref tree key ) 1 ) )]
+        [else ( dict-set! tree key 1 )] ) ) )
   GRAMS )
     
   tree )

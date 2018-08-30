@@ -49,7 +49,7 @@ module.exports = {
     return list.max();
   },
   'range': function( start, end ) {
-    list = List( [] );
+    var list = List( [] );
 
     for ( var i = start; i < end; i++ ) {
       list = list.push( i );

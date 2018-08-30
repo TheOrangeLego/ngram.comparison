@@ -67,12 +67,14 @@ start-time-1 = GL.time-now()
 GRAM_DATABASE = create-database()
 GL.console-log( GL.time-now( start-time-1 ) )
 
+#|
 GL.console-log( "5 runs" )
 start-time-5 = GL.time-now()
 L.for-each( L.range( 0, 5 ), lam( x ):
   create-database()
 end )
 GL.console-log( GL.time-now( start-time-5 ) )
+|#
 
 fun get-grams( words ) block:
   L.reduce( words, lam( grams, word ):

@@ -39,7 +39,7 @@ module.exports = {
     return list.reduce( ( x, y ) => Math.max( x, y ), list[0] )
   },
   'range': function( start, end ) {
-    list = [];
+    var list = [];
 
     for ( var i = start; i < end; i++ ) {
       list.push( i );
