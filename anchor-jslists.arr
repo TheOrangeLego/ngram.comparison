@@ -6,7 +6,7 @@ import file as F
 import global as GL
 
 MIN_GRAMS = 1
-MAX_GRAMS = 3
+MAX_GRAMS = 4
 GRAMS = L.range( MIN_GRAMS, MAX_GRAMS + 1 )
 
 TEXT_FILE_LIST = G.glob( "data/*.txt" )
@@ -69,12 +69,10 @@ fun create-database() block:
   database
 end
 
-#|
 GL.console-log( "1 run" )
 start-time-1 = GL.time-now()
 GRAM_DATABASE = create-database()
 GL.console-log( GL.time-now( start-time-1 ) )
-|#
 
 GL.console-log( "5 runs" )
 start-time-5 = GL.time-now()
@@ -83,7 +81,6 @@ L.for-each( L.range( 0, 5 ), lam( x ):
 end )
 GL.console-log( GL.time-now( start-time-5 ) )
 
-#|
 fun get-grams( words ) block:
   L.reduce( words, lam( grams, word ):
     SD.insert( grams, word, L.reduce( SD.keys( GRAM_DATABASE ), lam( word-gram, year ):
@@ -102,4 +99,3 @@ assertion-gram = get-grams( [L.list: "the", "a", "of", "of the"] )
 GL.assert( SD.size( SD.get( assertion-gram, "the" ) ), 23, "Incorrect number of years" )
 GL.assert( SD.get( SD.get( assertion-gram, "the" ), "1993" ), 3146, "Incorrect count of _the_" )
 GL.assert( SD.get( SD.get( assertion-gram, "of the" ), "2002" ), 442, "Incorrect count of _of the_" )
-|#

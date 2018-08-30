@@ -4,7 +4,7 @@ import glob
 
 # set minimum and maximum grams to be accounted for
 MIN_GRAMS = 1
-MAX_GRAMS = 3
+MAX_GRAMS = 4
 GRAMS = range( MIN_GRAMS, MAX_GRAMS + 1 )
 
 # get a list of all data text files

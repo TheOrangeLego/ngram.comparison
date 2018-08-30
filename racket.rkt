@@ -5,7 +5,7 @@
 ( require racket/dict )
 
 ( define MIN_GRAMS 1 )
-( define MAX_GRAMS 3 )
+( define MAX_GRAMS 4 )
 ( define GRAMS ( range MIN_GRAMS ( + 1 MAX_GRAMS ) ) )
 
 ( define TEXT_FILE_LIST ( for/list ([dir ( glob "data/*.txt" )]) ( path->string dir ) ) )

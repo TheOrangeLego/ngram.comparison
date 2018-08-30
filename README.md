@@ -21,9 +21,13 @@ In order to determine the performance of each implementation, this repo aims to 
 
 # Data
 
+![timing_results](timing.results.png)
+
 # Discussion
 
-There are a few notes to discuss from this experiment:
+### Garbage Collection Limitations
+
+While attempting to measure the runtime for creating 5 4-gram counter databases, `anchor-immutable` failed to allocate enough memory for its dictionary, as the maximum heap memory size was reached and the garbage collector was not able to compact for the necessary space, therefore resulting in an `N/A' in the table above. While this did not prevent Anchor from generating at least one correct database, we cannot be sure of its runtime to be an accurate depiction for `anchor-immutable`'s performance. Furthermore, this observation brings forth a question of how to handle programs which may require data structures in equal or larger capacity than `anchor-immutable`'s 4-gram counter. One possible solution would be to allow uses to specify a maximum heap size allocated for JavaScript through one of Anchor's command line arguments.
 
 ### Racket's `dict-set!` and `dict-update!`
 
@@ -59,4 +63,3 @@ This implementation retrieves the value mapped to the key in the tree and assign
 However, this did not cause much effect on the runtime, still taking around `174` seconds to create the database. The cause of this slowdown would require an investigation to how `dict-update!` retrieves and stores mapped values.
 
 # Conclusion
-
