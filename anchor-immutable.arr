@@ -6,7 +6,7 @@ import file as F
 import global as GL
 
 MIN_GRAMS = 1
-MAX_GRAMS = 4
+MAX_GRAMS = 3
 GRAMS = L.range( MIN_GRAMS, MAX_GRAMS + 1 )
 
 TEXT_FILE_LIST = G.glob( "data/*.txt" )

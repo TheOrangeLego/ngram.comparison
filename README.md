@@ -11,11 +11,11 @@ All implementations follow a similar procedure when generating the N-gram counte
 
 There are a total of 5 different implementations that we will be looking at:
 
-* [`anchor-immutable'](anchor-immutable.arr) - experimental CLI implementation of Pyret that utilizes Facebook's immutable collection's lists and maps
-* ['anchor-jslists'](anchor-jslists.arr) - similar to `anchor-immutable`, but the underlying structure is JavaScript's arrays and objects
-* ['python'](python.py) - Python implementation that utilizes its builtin lists and dictionaries
-* ['pyret'](pyret.arr) - Pyret-of-today implementation that utilizes its builtin lists and string dictionaries
-* ['racket'](racket.rkt) - Racket implementation that utilizes its builtin lists and dictionaries
+* [`anchor-immutable`](anchor-immutable.arr) - experimental CLI implementation of Pyret that utilizes Facebook's immutable collection's lists and maps
+* [`anchor-jslists`](anchor-jslists.arr) - similar to `anchor-immutable`, but the underlying structure is JavaScript's arrays and objects
+* [`python`](python.py) - Python implementation that utilizes its builtin lists and dictionaries
+* [`pyret`](pyret.arr) - Pyret-of-today implementation that utilizes its builtin lists and string dictionaries
+* [`racket`](racket.rkt) - Racket implementation that utilizes its builtin lists and dictionaries
 
 In order to determine the performance of each implementation, this repo aims to measure the average time it takes to generate the complete N-gram counter for 115 files accounting for up to tri-grams. Further assertion checks are made after the generation of these N-gram counters in order to determine if they were correctly constructed.
 
@@ -25,9 +25,13 @@ In order to determine the performance of each implementation, this repo aims to 
 
 # Discussion
 
-### Garbage Collection Limitations
+### Pyret's List Limitations
 
-While attempting to measure the runtime for creating 5 4-gram counter databases, `anchor-immutable` failed to allocate enough memory for its dictionary, as the maximum heap memory size was reached and the garbage collector was not able to compact for the necessary space, therefore resulting in an `N/A' in the table above. While this did not prevent Anchor from generating at least one correct database, we cannot be sure of its runtime to be an accurate depiction for `anchor-immutable`'s performance. Furthermore, this observation brings forth a question of how to handle programs which may require data structures in equal or larger capacity than `anchor-immutable`'s 4-gram counter. One possible solution would be to allow uses to specify a maximum heap size allocated for JavaScript through one of Anchor's command line arguments.
+The data for the `pyret` implementation was not considered above as it was unable to build a database without resulting in an error. While Pyret is compiled into a JavaScript file, the error results in a call stack overflow when attempting to read the length of a large list, in this case the list containing all the words in a text file. In order to overcome this, it is possible to override the maximum size of memory that Pyret provides to JavaScript to execute.
+
+### Anchor's Memory Allocation
+
+While attempting to measure the runtime for creating 5 4-gram counter databases, `anchor-immutable` failed to allocate enough memory for its dictionary, as the maximum heap memory size was reached and the garbage collector was not able to compact for the necessary space, therefore resulting in an `N/A` in the table above. While this did not prevent Anchor from generating at least one correct database, we cannot be sure of its runtime to be an accurate depiction for `anchor-immutable`'s performance. Furthermore, since the garbage collector was unable to compact enough space, it must mean that memory is being occupied by some dictionaries that were not marked for deletion. However, looking at the immutable module's JavaScript implementation, no dictionaries are being saved as they are all created locally.
 
 ### Racket's `dict-set!` and `dict-update!`
 
